@@ -1,0 +1,12 @@
+autor: Marian Durco(xdurco00)
+
+DHCP server
+	implementacia DHCP serveru v jazyku C program musi byt spustany s root pravami aby mohol program pocuvat na porte 67. Pri chybe program skonci nenulovym navratovym kodom.
+
+Priklady spustenia:
+	./dserver -p 172.16.0.0/12 
+	./dserver -p 192.168.0.0/24 -e 192.168.0.1,192.168.0.2
+
+Zoznam suborov:
+	dhcpopt.c dhcpopt.h dserver.c dserver.h ippool.c ippool.h main.h Makefile manual.pdf README 
+

@@ -43,8 +43,8 @@
 
 #define SIZEOFMSG 500
 
-#define LEASETIMER 60 
-#define LEASEOFFER	60
+#define LEASETIMER 3600
+#define LEASEOFFER 60
 
 
 enum err_codes

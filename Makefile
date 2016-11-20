@@ -9,4 +9,4 @@ clean:
 	rm $(SERVER) 
 
 tar: 
-	tar -czf xdurco00.tar.gz $(SERVER_FILE) #TODO
+	tar -cf xdurco00.tar $(FILES) README manual.pdf Makefile

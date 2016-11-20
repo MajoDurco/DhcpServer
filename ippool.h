@@ -49,5 +49,6 @@ bool isValidMask(char *);
 int isNumeric (const char *);
 int releaseAddress(IpPool *, uint8_t* );
 void checkIntegrityOfPool(IpPool *);
+int checkRequestedIp(optList *);
 
 #endif

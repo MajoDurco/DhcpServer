@@ -474,6 +474,19 @@ int checkServerId(optList *replyOptions,uint32_t serverIP)
 }
 
 /*
+ *@function chceck requested IP from dhcp options
+ */
+int checkRequestedIp(optList *replyOptions)
+{
+	dhcpOption requested_ip = searchOption(replyOptions,REQUESTED_IP_ADDRESS);
+	if (requested_ip==NULL)
+	{
+		return ERRIP;
+	}
+	return OK;
+}
+
+/*
  *@function set ip status in taken status
  */
 int setForAck(IpPool *ip_pool,uint32_t requested_ip)

@@ -25,12 +25,12 @@ int main(int argc, char **argv)
 		return EXIT_FAILURE;
 	}
 	IpPool iplist;
+	CLEAN_POOL = &iplist;
 	if(initDhcpPool(&iplist,program_arg)!=OK)
 	{
 		reportErr("Error in initializin dhcp pool");
 		return EXIT_FAILURE;
 	}
-	/*printIpInPool(&iplist);*/
 	if(setServerIP(&iplist,&SERVER_IP)!=OK)
 	{
 		reportErr("Error in setting IP for server");
@@ -39,17 +39,14 @@ int main(int argc, char **argv)
 	}
 	char server_ip[32];
 	inet_ntop(AF_INET,&SERVER_IP,server_ip,32);
-	printf("IP server = %s\n", server_ip);
 	char brod[32];
 	inet_ntop(AF_INET,&BROADCAST,brod,32);
-	printf("broadcast = %s\n", brod);
 
 	if((setUpConnectivity(&socket)) != OK)
 	{
 		reportErr("setUpConnectivity Err, check if you run it as root");
 		return EXIT_FAILURE;
 	}
-
 	if(communicate(socket,&iplist) != OK)
 	{
 		reportErr("communicate Errl!");
@@ -66,7 +63,7 @@ int main(int argc, char **argv)
 void signalHandler(int signal)
 {
 	if(CLEAN_POOL!=NULL)
-		free(CLEAN_POOL);
+		deletePool(CLEAN_POOL);
 	exit(signal);
 }
 
@@ -218,7 +215,7 @@ int setUpConnectivity(int *socket_func)
 	if (bind(server_socket, (struct sockaddr *) &server_address, sizeof(server_address)) < 0) 
 	return ERRCONNECT;
 	
-	printf("dhcp server is listening on %d\n",ntohs(server_address.sin_port));
+	printf("Listening on port: %d\n",ntohs(server_address.sin_port));
 
 	*socket_func = server_socket;
 
@@ -262,7 +259,6 @@ int communicate(int server_socket,IpPool *ip_pool)
 		switch(message_type->data[0])
 		{
 			case DHCPDISCOVER:
-				printf("GET DISCOVER\n");
 				if(discoverHandler(&server_msg,&client_msg,&replyOptions,ip_pool)!=OK)
 				{
 					send_flag=-1;
@@ -270,9 +266,9 @@ int communicate(int server_socket,IpPool *ip_pool)
 				}
 				break;
 			case DHCPREQUEST:
-				printf("GET REQUEST\n");
+				;
 				uint32_t offered_ip = 0;
-				if(client_msg.ciaddr==0) // it's not renew
+				if( (checkRequestedIp(&parsedOptions)) == OK )
 				{
 					if(checkServerId(&parsedOptions,SERVER_IP)!=OK)
 					{
@@ -281,24 +277,21 @@ int communicate(int server_socket,IpPool *ip_pool)
 					}
 					if(checkRequestIpFromClient(&client_msg,&parsedOptions,ip_pool,&offered_ip)!=OK)
 						nak=1;
-				}
-				else // it's renew
+				} else // it's renew
 				{
 					renew = true;
-					printf("RENEW\n");
+					offered_ip = client_msg.ciaddr;
 				}
 
 				requestHandler(&client_msg,&server_msg,&replyOptions,ip_pool,nak,offered_ip);
 				break;
 			case DHCPRELEASE:
-				printf("GET RELEASE\n");
 				send_flag=-1;
 				if(checkServerId(&parsedOptions,SERVER_IP)!=OK)
 					break;
 				releaseHandler(&client_msg,ip_pool);
 				break;
 			default:
-				printf("I get wrong DHCP_MESSAGE_TYPE\n");
 				deleteList(&parsedOptions);
 				deleteList(&replyOptions);
 				send_flag=-1;
